@@ -95,6 +95,7 @@ def submodule_update_recursive(module_dir):
             subprocess.check_call(['git', '-C', module_path, 'config', '-f', '.gitmodules', 'submodule.' + submodule_name + '.url', mirror_http])
 
     # 拉取
+    subprocess.check_call(['git', '-C', module_path, 'submodule', 'deinit', '-f', '.'])
     subprocess.check_call(['git', '-C', module_path, 'submodule', 'update', '--init'])
 
     # 同步url
