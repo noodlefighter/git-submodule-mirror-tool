@@ -80,6 +80,10 @@ def get_submodules(path):
 def submodule_update_recursive(module_dir):
     module_path = os.path.join(ROOTDIR, module_dir)
     modules = get_submodules(module_path)
+
+    if len(modules) == 0:
+        return
+
     print('DIR %s'%module_dir, 'modules:', modules)
 
     # 更新子模块的URL为镜象仓库URL
