@@ -166,6 +166,7 @@ if __name__ == '__main__':
     show_parser = subparsers.add_parser('show', help='Show command')
 
     update_submodules_parser = subparsers.add_parser('update-submodules', help='Update submodules command')
+    subparsers.add_parser('update', help='alias for update-submodules')
 
     push_parser = subparsers.add_parser('push', help='Push command')
     push_parser.add_argument('submodule', nargs='?', help='submodule name', )
@@ -189,7 +190,7 @@ if __name__ == '__main__':
         print('apply cfg-file: %s'%args.cfg_file, file=sys.stderr)
 
     # run command
-    if args.command == 'update-submodules':
+    if args.command == 'update-submodules' or args.command == 'update':
         open_dict()
         submodule_update_recursive('')
     elif args.command == 'show':
