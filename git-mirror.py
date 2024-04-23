@@ -3,19 +3,24 @@
 # 将子模块推送到镜象站、配置gitmodules等
 
 import os
+import sys
 import shutil
 import argparse
 import subprocess
 
-MIRROR_SITE_SSH = "ssh://git@example.com/%s.git"
-MIRROR_SITE_HTTP = "http://example.com/%s"
+MIRROR_SITE_SSH_DEFAULT = "ssh://git@example.com/{}.git"
+MIRROR_SITE_HTTP_DEFAULT = "http://example.com/{}"
+CONFIG_FILE_DEFAULT = ".submodule-mirrors"
 ROOTDIR = os.getcwd()
 
-CONFIG_FILE = ".submodule-mirrors"
+g_site_ssh = MIRROR_SITE_SSH_DEFAULT
+g_site_http = MIRROR_SITE_HTTP_DEFAULT
+g_cfgfile = CONFIG_FILE_DEFAULT
+
 m_dict = {}
 
 def open_dict():
-    with open(CONFIG_FILE, 'r') as f:
+    with open(g_cfgfile, 'r') as f:
         for line in f:
             n = 0
             line = line.strip()
@@ -40,8 +45,8 @@ def open_dict():
 
                 m_dict[submodule_path] = {
                     'source_url': source_url,
-                    'mirror_http': MIRROR_SITE_HTTP % mirror_name,
-                    'mirror_ssh': MIRROR_SITE_SSH % mirror_name,
+                    'mirror_http': g_site_http.replace('{}', mirror_name),
+                    'mirror_ssh': g_site_ssh.replace('{}', mirror_name),
                     'mirror_name': mirror_name,
                     'submodule_name': submodule_name
                 }
@@ -154,6 +159,8 @@ def push_mirror_bare(submodule):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Git Submodule Mirror Tool')
+
+    # add sub command -----
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
 
     show_parser = subparsers.add_parser('show', help='Show command')
@@ -163,8 +170,25 @@ if __name__ == '__main__':
     push_parser = subparsers.add_parser('push', help='Push command')
     push_parser.add_argument('submodule', nargs='?', help='submodule name', )
 
+    # add options -----
+    parser.add_argument('--site-ssh', help='Mirror site ssh url, default: '+MIRROR_SITE_SSH_DEFAULT, required=False, default=MIRROR_SITE_SSH_DEFAULT)
+    parser.add_argument('--site-http', help='Mirror site http url, default: '+MIRROR_SITE_HTTP_DEFAULT, required=False, default=MIRROR_SITE_HTTP_DEFAULT)
+    parser.add_argument('--cfg-file', help='config file, default: %s'%CONFIG_FILE_DEFAULT, nargs='?', required=False, default=CONFIG_FILE_DEFAULT)
+
     args = parser.parse_args()
 
+    # apply options
+    if args.site_ssh:
+        print('apply site-ssh: %s'%args.site_ssh, file=sys.stderr)
+        g_site_ssh = args.site_ssh
+    if args.site_http:
+        g_site_http = args.site_http
+        print('apply site-http: %s'%args.site_http, file=sys.stderr)
+    if args.cfg_file:
+        g_cfgfile = args.cfg_file
+        print('apply cfg-file: %s'%args.cfg_file, file=sys.stderr)
+
+    # run command
     if args.command == 'update-submodules':
         open_dict()
         submodule_update_recursive('')
